@@ -1,3 +1,5 @@
+#![allow(clippy::manual_flatten)]
+
 use std::env;
 use std::fs;
 use std::fs::read_dir;
@@ -43,13 +45,13 @@ impl Switcher {
     fn get_cargo_bin() -> Result<PathBuf> {
         let path = env::var("PATH").expect("failed to find PATH");
 
-        path
-            .split(':')
+        path.split(':')
             .find(|component| component.contains(".cargo/bin"))
             .map(Path::new)
             .with_context(|| {
                 "Failed to find your .cargo/bin directory. Is Cargo configured in your PATH?"
-            }).map(ToOwned::to_owned)
+            })
+            .map(ToOwned::to_owned)
     }
 
     pub fn new() -> Result<Self> {
@@ -75,9 +77,10 @@ impl Switcher {
     fn get_version_tag(package: &str) -> Option<(&str, &str)> {
         let (project_name, version) = package.split_once('@')?;
 
-        let good_enough = project_name.len() >= 1 && version.chars().any(|ch| ch.is_ascii_digit());
+        let good_enough =
+            project_name.is_empty().not() && version.chars().any(|ch| ch.is_ascii_digit());
 
-        good_enough.then(|| (project_name, version))
+        good_enough.then_some((project_name, version))
     }
 
     fn build_target_path(&self, package: &str) -> Result<PathBuf> {
@@ -131,7 +134,7 @@ impl Switcher {
                 Err(err) => {
                     eprintln!("{err}");
                     continue;
-                },
+                }
             };
             let entry_path = entry.path();
             // Should be a safe unwrap
@@ -154,11 +157,18 @@ impl Switcher {
     fn switch_package(&self, package: &str) -> Result<()> {
         let switch_registry = self.build_target_path(package)?;
         let cargo_bin = Self::get_cargo_bin()?;
-    
-        ensure!(switch_registry.exists(), "Project {package} is not installed!");
+
+        ensure!(
+            switch_registry.exists(),
+            "Project {package} is not installed!"
+        );
 
         let project_bin = switch_registry.join("bin");
-        ensure!(switch_registry.exists(), "Expected {} to exist", project_bin.display());
+        ensure!(
+            switch_registry.exists(),
+            "Expected {} to exist",
+            project_bin.display()
+        );
 
         for maybe_entry in read_dir(project_bin)? {
             let entry = maybe_entry?;
@@ -173,7 +183,11 @@ impl Switcher {
             }
 
             unix::fs::symlink(&entry_path, &symlink_path)?;
-            println!("Linked {} to {}", entry_path.display(), symlink_path.display());
+            println!(
+                "Linked {} to {}",
+                entry_path.display(),
+                symlink_path.display()
+            );
         }
 
         Ok(())

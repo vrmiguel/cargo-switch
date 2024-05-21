@@ -1,6 +1,6 @@
 [package]
 name = "cargo-switch"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Allows installing several versions of the same Cargo binary crate and switching between them easily"
 license = "MIT"
@@ -10,5 +10,3 @@ license = "MIT"
 [dependencies]
 anyhow = "1.0.86"
 clap = { version = "4.5.4", features = ["derive"] }
-serde = { version = "1.0.202", features = ["derive"] }
-serde_json = "1.0.117"
