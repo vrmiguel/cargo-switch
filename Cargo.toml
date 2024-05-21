@@ -2,6 +2,8 @@
 name = "cargo-switch"
 version = "0.1.0"
 edition = "2021"
+description = "Allows installing several versions of the same Cargo binary crate and switching between them easily"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
